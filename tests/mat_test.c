@@ -32,7 +32,7 @@ void add_test(void) {
   deallocate_matrix(mat2);
 }
 
-/* (OPTIONAL) Uncomment the following sub_test if you have decided to implement it in matrix.c.
+//(OPTIONAL) Uncomment the following sub_test if you have decided to implement it in matrix.c.
 void sub_test(void) {
   matrix *result = NULL;
   matrix *mat1 = NULL;
@@ -56,7 +56,6 @@ void sub_test(void) {
   deallocate_matrix(mat1);
   deallocate_matrix(mat2);
 }
-*/
 
 void mul_test(void) {
   matrix *result = NULL;
@@ -86,7 +85,7 @@ void mul_test(void) {
   deallocate_matrix(mat2);
 }
 
-/* (OPTIONAL) Uncomment the following neg_test if you have decided to implement it in matrix.c.
+// (OPTIONAL) Uncomment the following neg_test if you have decided to implement it in matrix.c.
 void neg_test(void) {
   matrix *result = NULL;
   matrix *mat = NULL;
@@ -105,8 +104,7 @@ void neg_test(void) {
   }
   deallocate_matrix(result);
   deallocate_matrix(mat);
-} 
-*/
+}
 
 void abs_test(void) {
   matrix *result = NULL;
@@ -259,10 +257,9 @@ int main (void)
 
    /* add the tests to the suite */
    if ((CU_add_test(pSuite, "add_test", add_test) == NULL) ||
-        /* (OPTIONAL) Uncomment the following lines if you have implemented sub_matrix and neg_matrix.
+        //(OPTIONAL) Uncomment the following lines if you have implemented sub_matrix and neg_matrix.
         (CU_add_test(pSuite, "sub_test", sub_test) == NULL) ||
         (CU_add_test(pSuite, "neg_test", neg_test) == NULL) ||
-        */
         (CU_add_test(pSuite, "mul_test", mul_test) == NULL) ||
         (CU_add_test(pSuite, "abs_test", abs_test) == NULL) ||
         (CU_add_test(pSuite, "pow_test", pow_test) == NULL) ||
@@ -280,8 +277,8 @@ int main (void)
    }
 
   // Run all tests using the basic interface
-  CU_basic_set_mode(CU_BRM_NORMAL);
-  // CU_basic_set_mode(CU_BRM_VERBOSE);
+  //CU_basic_set_mode(CU_BRM_NORMAL);
+  CU_basic_set_mode(CU_BRM_VERBOSE);
   CU_basic_run_tests();
   printf("\n");
   CU_basic_show_failures(CU_get_failure_list());
