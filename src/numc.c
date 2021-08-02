@@ -312,6 +312,23 @@ static PyMappingMethods Matrix61c_mapping = {
  */
 static PyObject *Matrix61c_add(Matrix61c* self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    if(!PyObject_TypeCheck(self, &Matrix61cType) || !PyObject_TypeCheck(args, &Matrix61cType)){
+        PyErr_SetString(PyExc_TypeError, "Invalid type");
+        return NULL;
+    }
+    Matrix61c* result = (Matrix61c*) Matrix61c_new(&Matrix61cType, NULL, NULL);
+    int code = allocate_matrix(&(result->mat), self->mat->rows,self->mat->cols);
+    if (code != 0) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate matrix");
+        return NULL;
+    }
+    result->shape = PyTuple_Pack(2, PyLong_FromLong(self->mat->rows), PyLong_FromLong(self->mat->cols));
+    code = add_matrix(result->mat, self->mat, ((Matrix61c *)args)->mat);
+    if(code!=0){
+        PyErr_SetString(PyExc_ValueError, "Dimensions of matrices don't match");
+        return NULL;
+    }
+    return (PyObject *)result;
 }
 
 /*
@@ -329,6 +346,24 @@ static PyObject *Matrix61c_sub(Matrix61c* self, PyObject* args) {
  */
 static PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
     /* TODO: YOUR CODE HERE */
+    if(!PyObject_TypeCheck(self, &Matrix61cType) || !PyObject_TypeCheck(args, &Matrix61cType)){
+        PyErr_SetString(PyExc_TypeError, "Invalid type");
+        return NULL;
+    }
+    Matrix61c* result = (Matrix61c*) Matrix61c_new(&Matrix61cType, NULL, NULL);
+    int code = allocate_matrix(&(result->mat), self->mat->rows,self->mat->cols);
+    if (code != 0) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate matrix");
+        return NULL;
+    }
+    result->shape = PyTuple_Pack(2, PyLong_FromLong(self->mat->rows), PyLong_FromLong(self->mat->cols));
+    code = mul_matrix(result->mat, self->mat, ((Matrix61c *)args)->mat);
+    if(code!=0){
+        PyErr_SetString(PyExc_ValueError, "Invalid dimensions");
+        return NULL;
+    }
+    return (PyObject *)result;
+
 }
 
 /*
@@ -344,6 +379,19 @@ static PyObject *Matrix61c_neg(Matrix61c* self) {
  */
 static PyObject *Matrix61c_abs(Matrix61c *self) {
     /* TODO: YOUR CODE HERE */
+     if(!PyObject_TypeCheck(self, &Matrix61cType)){
+        PyErr_SetString(PyExc_TypeError, "Invalid type");
+        return NULL;
+    }
+    Matrix61c* result = (Matrix61c*) Matrix61c_new(&Matrix61cType, NULL, NULL);
+    int code = allocate_matrix(&(result->mat), self->mat->rows,self->mat->cols);
+    if (code != 0) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate matrix");
+        return NULL;
+    }
+    result->shape = PyTuple_Pack(2, PyLong_FromLong(self->mat->rows), PyLong_FromLong(self->mat->cols));
+    code = abs_matrix(result->mat, self->mat);
+    return (PyObject *)result;
 }
 
 /*
@@ -351,6 +399,23 @@ static PyObject *Matrix61c_abs(Matrix61c *self) {
  */
 static PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optional) {
     /* TODO: YOUR CODE HERE */
+     if(!PyObject_TypeCheck(self, &Matrix61cType) || !PyObject_TypeCheck(pow, &PyLong_Type)){
+        PyErr_SetString(PyExc_TypeError, "Invalid type");
+        return NULL;
+    }
+    Matrix61c* result = (Matrix61c*) Matrix61c_new(&Matrix61cType, NULL, NULL);
+    int code = allocate_matrix(&(result->mat), self->mat->rows,self->mat->cols);
+    if (code != 0) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to allocate matrix");
+        return NULL;
+    }
+    result->shape = PyTuple_Pack(2, PyLong_FromLong(self->mat->rows), PyLong_FromLong(self->mat->cols));
+    code = pow_matrix(result->mat, self->mat, (int)PyLong_AsLong(pow));
+    if(code!=0){
+        PyErr_SetString(PyExc_ValueError, "Dimensions of matrices don't match");
+        return NULL;
+    }
+    return (PyObject *)result;
 }
 
 /*
@@ -359,6 +424,10 @@ static PyObject *Matrix61c_pow(Matrix61c *self, PyObject *pow, PyObject *optiona
  */
 static PyNumberMethods Matrix61c_as_number = {
     /* TODO: YOUR CODE HERE */
+    .nb_add = Matrix61c_add;
+    .nb_matrix_multiply = Matrix61c_multiply;
+    .nb_absolute = Matrix61c_abs;
+    .nb_power = Matrix61c_pow;
 };
 
 
@@ -369,6 +438,19 @@ static PyNumberMethods Matrix61c_as_number = {
  */
 static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    if(args[0]==NULL || args[1] ==NULL || args[2] == NULL || !PyObject_TypeCheck(self, &Matrix61cType) || !PyObject_TypeCheck(args[0], &PyLong_Type) || !PyObject_TypeCheck(args[1], &PyLong_Type)
+    || (!PyObject_TypeCheck(args[2], &PyLong_Type) && !PyObject_TypeCheck(args[0], &PyFloat_Type))){
+        PyErr_SetString(PyExc_TypeError, "Invalid type");
+        return NULL;
+    }
+    int i = PyLong_FromLong(args[0]);
+    int j = PyLong_FromLong(args[1]);
+    double val = PyFloat_AsDouble(args[2]);
+    if(i<0 || j<0 || i>=self->mat->rows || j>=self->mat->cols){
+        PyErr_SetString(PyExc_ValueError, "Invalid indices")
+        return NULL;
+    }
+    set(self->mat, i, j, val);
 }
 
 /*
@@ -378,6 +460,18 @@ static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
  */
 static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
+    if(args[0]==NULL || args[1] ==NULL || !PyObject_TypeCheck(self, &Matrix61cType) || !PyObject_TypeCheck(args[0], &PyLong_Type) || !PyObject_TypeCheck(args[1], &PyLong_Type)){
+        PyErr_SetString(PyExc_TypeError, "Invalid type");
+        return NULL;
+    }
+    int i = PyLong_FromLong(args[0]);
+    int j = PyLong_FromLong(args[1]);
+    if(i<0 || j<0 || i>=self->mat->rows || j>=self->mat->cols){
+        PyErr_SetString(PyExc_ValueError, "Invalid indices")
+        return NULL;
+    }
+    doublt val = get(self->mat, i, j);
+    return PyFloat_FromDouble(val);
 }
 
 /*
@@ -388,6 +482,8 @@ static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
  */
 static PyMethodDef Matrix61c_methods[] = {
     /* TODO: YOUR CODE HERE */
+    {"set", Matrix61c_set_value,METH_VARARGS,'(row, col, value)'},
+    {"get", Matrix61c_get_value,METH_VARARGS,'(row, col)'},
     {NULL, NULL, 0, NULL}
 };
 

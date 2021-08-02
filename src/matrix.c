@@ -101,7 +101,7 @@ void deallocate_matrix(matrix *mat) {
             if(mat->parent == NULL){
                 free(mat->data);
             } else { 
-                if(mat->parent->ref_cnt == 2){
+                if(mat->parent->ref_cnt == 1){
                     free(mat->parent->data);
                 }
             }
@@ -144,7 +144,6 @@ void fill_matrix(matrix *mat, double val) {
  */
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
-    if(mat1==NULL || mat2==NULL || result==NULL) return -1;
     if(mat1->rows!=mat2->rows || mat1->cols != mat2->cols || result->cols != mat1->cols || result->rows != mat2->rows) return -1;
     for(int i = 0; i<mat1->rows; i++){
         for(int j = 0; j<mat1->cols; j++){
@@ -178,7 +177,6 @@ int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
-    if(mat1==NULL || mat2==NULL || result==NULL) return -1;
     if(mat1->cols!=mat2->rows || result->cols != mat2->cols || result->rows != mat1->rows) return -1;
     for(int i = 0; i<mat1->rows; i++){
         for(int j = 0; j<mat1->cols; j++){
@@ -199,7 +197,6 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
  */
 int pow_matrix(matrix *result, matrix *mat, int pow) {
     /* TODO: YOUR CODE HERE */
-    if(mat == NULL|| result == NULL) return -1;
     if(mat->rows != mat->cols || result->rows != result->cols || result->rows != mat->rows) return -1;
     fill_matrix(result, 0);
     for(int i = 0; i<result->rows; i++){
