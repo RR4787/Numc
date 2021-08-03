@@ -13,7 +13,12 @@ class TestAdd(TestCase):
         # TODO: YOUR CODE HERE
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(2, 2, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(2, 2, seed=1)
+        print(np.array(dp_mat1))
+        print(dp_mat1)
+        b= dp.Matrix([[77, 7,7], [7, 7,6]])
+        print(b+b)
         is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
+        sol = dp_mat1 + dp_mat2 
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
