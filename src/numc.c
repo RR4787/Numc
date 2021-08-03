@@ -431,6 +431,8 @@ static PyNumberMethods Matrix61c_as_number = {
     .nb_multiply = (binaryfunc) Matrix61c_multiply,
     .nb_absolute = (unaryfunc) Matrix61c_abs,
     .nb_power = (ternaryfunc) Matrix61c_pow,
+    .nb_subtract = (binaryfunc) Matrix61c_sub,
+    .nb_negative = (unaryfunc) Matrix61c_neg
 };
 
 
@@ -440,37 +442,22 @@ static PyNumberMethods Matrix61c_as_number = {
  * This function should return None in Python.
  */
 static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
-    /* TODO: YOUR CODE HERE */
-
-    PyObject *row;
-    PyObject *col;
-    PyObject *val;
-
-    //pyArg_unPackType
-
-    if(!PyArg_UnpackTuple(args, "ref", 3, 3, &row, &col, &val || !PyLong_Check(row) ||!PyLong_Check(col)||!PyLong_Check(val))){
-        PyErr_SetString(PyExc_TypeError, "Invalid type");
-
-    } //checked there are 3 args, put it row col val, in order
-
-    long row_true = PyLong_AsLong(row);
-    long col_true = PyLong_AsLong(col);
-    double val_true = PyLong_AsDouble(val);
-
-
-    /* if(args[0]==NULL || args[1] ==NULL || args[2] == NULL || !PyObject_TypeCheck(self, &Matrix61cType) || !PyObject_TypeCheck(args[0], &PyLong_Type) || !PyObject_TypeCheck(args[1], &PyLong_Type)
-    || (!PyObject_TypeCheck(args[2], &PyLong_Type) && !PyObject_TypeCheck(args[0], &PyFloat_Type))){
+    PyObject *row = NULL;
+    PyObject *col = NULL;
+    PyObject *val = NULL;
+    if(!PyArg_UnpackTuple(args, "ref", 3, 3, &row, &col, &val) || !PyLong_Check(row) ||!PyLong_Check(col)||(!PyLong_Check(val) && !PyFloat_Check(val))){
         PyErr_SetString(PyExc_TypeError, "Invalid type");
         return NULL;
-    } */
 
-    int i = row_true;
-    int j = col_true;
-    double val_new = val_true;
+    } //checked there are 3 args, put it row col val, in order
+    int i = PyLong_AsLong(row);
+    int j = PyLong_AsLong(col);
+    double val_true = PyFloat_AsDouble(val);
     if(i<0 || j<0 || i>=self->mat->rows || j>=self->mat->cols){
         PyErr_SetString(PyExc_ValueError, "Invalid indices");
+        return NULL;
     }
-    set(self->mat, i, j, val_new);
+    set(self->mat, i, j, val_true);
 
     Py_RETURN_NONE;
 }
@@ -482,32 +469,18 @@ static PyObject *Matrix61c_set_value(Matrix61c *self, PyObject* args) {
  */
 static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
     /* TODO: YOUR CODE HERE */
-
-
-    /* if(args[0]==NULL || args[1] ==NULL || !PyObject_TypeCheck(self, &Matrix61cType) || !PyObject_TypeCheck(args[0], &PyLong_Type) || !PyObject_TypeCheck(args[1], &PyLong_Type)){
+    PyObject *row = NULL;
+    PyObject *col = NULL;
+    if(!PyArg_UnpackTuple(args, "ref", 2, 2, &row, &col) || !PyLong_Check(row) ||!PyLong_Check(col)){
         PyErr_SetString(PyExc_TypeError, "Invalid type");
         return NULL;
-    } */
-
-    PyObject *row;
-    PyObject *col;
-
-
-    //pyArg_unPackType
-
-    if(!PyArg_UnpackTuple(args, "ref", 2, 2, &row, &col || !PyLong_Check(row) ||!PyLong_Check(col)   )){
-        PyErr_SetString(PyExc_TypeError, "Invalid type");
 
     } //checked there are 3 args, put it row col val, in order
-
-    long row_true = PyLong_AsLong(row);
-    long col_true = PyLong_AsLong(col);
-    
-    int i = row_true;
-    int j = col_true;
-
+    long i = PyLong_AsLong(row);
+    long j = PyLong_AsLong(col);
     if(i<0 || j<0 || i>=self->mat->rows || j>=self->mat->cols){
         PyErr_SetString(PyExc_ValueError, "Invalid indices");
+        return NULL;
     }
     double val = get(self->mat, i, j);
     return PyFloat_FromDouble(val);
@@ -520,8 +493,6 @@ static PyObject *Matrix61c_get_value(Matrix61c *self, PyObject* args) {
  * You might find this link helpful: https://docs.python.org/3.6/c-api/structures.html
  */
 static PyMethodDef Matrix61c_methods[] = {
-    /* TODO: YOUR CODE HERE */
-    
     {"set", (PyCFunction)Matrix61c_set_value,METH_VARARGS,NULL},
     {"get", (PyCFunction)Matrix61c_get_value,METH_VARARGS,NULL},
     {NULL, NULL, 0, NULL}
