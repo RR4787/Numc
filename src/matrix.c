@@ -145,30 +145,30 @@ void fill_matrix(matrix *mat, double val) {
 int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
     if(mat1->rows!=mat2->rows || mat1->cols != mat2->cols || result->cols != mat1->cols || result->rows != mat2->rows) return -1;
-    for(int i = 0; i<mat1->rows; i++){
-        for(int j = 0; j<mat1->cols; j++){
-            result->data[(result->cols) * i + j] = mat1->data[(result->cols) * i + j] + mat2->data[(result->cols) * i + j];
+    // for(int i = 0; i<mat1->rows; i++){
+    //     for(int j = 0; j<mat1->cols; j++){
+    //         result->data[(result->cols) * i + j] = mat1->data[(result->cols) * i + j] + mat2->data[(result->cols) * i + j];
+    //     }
+    // }
+    // return 0;
+    int len = mat1->rows * mat1->cols;
+    omp_set_num_threads(8);
+    #pragma omp parallel for 
+        for(int i =0;i < len / 4 * 4; i++){
+            __m256d _1 = _mm256_loadu_pd(mat1->data + (i * 4));
+            __m256d _2 = _mm256_loadu_pd(mat2->data + (i * 4));
+            __m256d _sum = _mm256_add_pd(_1,_2);
+            _mm256_storeu_pd(result->data + (i * 4), _sum);
         }
+    for(int i = len/4*4;i<len;i++){
+        result->data[i] = mat1->data[i] + mat2->data[i];
     }
     return 0;
+
+    
 }
 
-/*
- * (OPTIONAL)
- * Store the result of subtracting mat2 from mat1 to `result`.
- * Return 0 upon success and a nonzero value upon failure.
- */
-int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
-    /* TODO: YOUR CODE HERE */
-    if(mat1==NULL || mat2==NULL || result==NULL) return -1;
-    if(mat1->rows!=mat2->rows || mat1->cols != mat2->cols || result->cols != mat1->cols || result->rows != mat2->rows) return -1;
-    for(int i = 0; i<mat1->rows; i++){
-        for(int j = 0; j<mat1->cols; j++){
-            result->data[(result->cols) * i + j] = mat1->data[(result->cols) * i + j] - mat2->data[(result->cols) * i + j];
-        }
-    }
-    return 0;
-}
+
 
 /*
  * Store the result of multiplying mat1 and mat2 to `result`.
@@ -180,7 +180,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     if(mat1->cols!=mat2->rows || result->cols != mat2->cols || result->rows != mat1->rows) return -1;
     for(int i = 0; i<mat1->rows; i++){
         for(int j = 0; j<mat1->cols; j++){
-            int sum = 0;
+            double sum = 0;
             for(int z = 0; z<mat1->cols; z++){
                 sum += mat1->data[(mat1->cols) * i + z] * mat2->data[(mat2->cols) * z + j];
             }
@@ -222,36 +222,68 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
     return 0;
 }
 
-/*
- * (OPTIONAL)
- * Store the result of element-wise negating mat's entries to `result`.
- * Return 0 upon success and a nonzero value upon failure.
- */
-int neg_matrix(matrix *result, matrix *mat) {
-    /* TODO: YOUR CODE HERE */
-    if(mat == NULL|| result == NULL) return -1;
-    if(mat->rows != mat->cols || result->rows != result->cols || result->rows != mat->rows) return -1;
-    for(int i = 0; i<mat->rows; i++){
-        for(int j = 0; j<mat->cols; j++){
-            result->data[(result->cols) * i + j] = -1 * (mat->data[(result->cols) * i + j]);
-        }
-    }
-    return 0;
-}
+
 
 /*
  * Store the result of taking the absolute value element-wise to `result`.
  * Return 0 upon success and a nonzero value upon failure.
  */
 int abs_matrix(matrix *result, matrix *mat) {
-    /* TODO: YOUR CODE HERE */
-    if(mat == NULL|| result == NULL) return -1;
-    if(mat->rows != mat->cols || result->rows != result->cols || result->rows != mat->rows) return -1;
-    for(int i = 0; i<mat->rows; i++){
-        for(int j = 0; j<mat->cols; j++){
-            int val = mat->data[(result->cols) * i + j];
-            result->data[(result->cols) * i + j] = val >= 0 ? val : -1 * val;
-        }
+    if(mat->cols != result->cols || result->rows != mat->rows) return -1;
+    // for(int i = 0; i<mat->rows; i++){
+    //     for(int j = 0; j<mat->cols; j++){
+    //         int val = mat->data[(result->cols) * i + j];
+    //         result->data[(result->cols) * i + j] = (val >= 0 ? val : -1*val)    ;
+    //     }
+    // }
+    // return 0;
+    int len = mat->rows * mat->cols;
+    __m256d _neg = _mm256_set1_pd(-1);
+    for(int i = 0;i < len / 4 * 4; i++){
+        __m256d _vals = _mm256_loadu_pd(mat->data + (i*4));
+        __m256d _negated = _mm256_mul_pd(_vals, _neg);
+        _mm256_storeu_pd(result->data + (i*4), _mm256_max_pd(_negated, _vals));
     }
+
+    for(int i = len / 4 * 4;i < len; i++){
+            double val = mat->data[i];
+            result->data[i] = (val >= 0 ? val : -1*val);
+    }
+    return 0;
+}
+
+
+
+
+
+/*
+ * (OPTIONAL)
+ * Store the result of element-wise negating mat's entries to `result`.
+ * Return 0 upon success and a nonzero value upon failure.
+ */
+int neg_matrix(matrix *result, matrix *mat) {
+    // if(mat->rows != mat->cols || result->rows != result->cols || result->rows != mat->rows) return -1;
+    // for(int i = 0; i<mat->rows; i++){
+    //     for(int j = 0; j<mat->cols; j++){
+    //         result->data[(result->cols) * i + j] = -1 * (mat->data[(result->cols) * i + j]);
+    //     }
+    // }
+    return 0;
+}
+
+/*
+ * (OPTIONAL)
+ * Store the result of subtracting mat2 from mat1 to `result`.
+ * Return 0 upon success and a nonzero value upon failure.
+ */
+int sub_matrix(matrix *result, matrix *mat1, matrix *mat2) {
+    /* TODO: YOUR CODE HERE */
+    // if(mat1==NULL || mat2==NULL || result==NULL) return -1;
+    // if(mat1->rows!=mat2->rows || mat1->cols != mat2->cols || result->cols != mat1->cols || result->rows != mat2->rows) return -1;
+    // for(int i = 0; i<mat1->rows; i++){
+    //     for(int j = 0; j<mat1->cols; j++){
+    //         result->data[(result->cols) * i + j] = mat1->data[(result->cols) * i + j] - mat2->data[(result->cols) * i + j];
+    //     }
+    // }
     return 0;
 }
