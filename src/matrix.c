@@ -83,8 +83,8 @@ int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int co
     (*mat)->data = from->data + offset;
     (*mat)->rows = rows;
     (*mat)->cols = cols;
-    (*mat)->ref_cnt = 1;
     from->ref_cnt += 1;
+    (*mat)->ref_cnt = -1; //this is a slice and you can't create another slice from this slice
     (*mat)->parent = from;
     return 0;
 }
@@ -97,16 +97,38 @@ int allocate_matrix_ref(matrix **mat, matrix *from, int offset, int rows, int co
 void deallocate_matrix(matrix *mat) {
     /* TODO: YOUR CODE HERE */
     if(mat != NULL){
-        if(mat->ref_cnt == 1){
-            if(mat->parent == NULL){
-                free(mat->data);
-            } else { 
-                if(mat->parent->ref_cnt == 1){
-                    free(mat->parent->data);
-                }
+        if(mat->ref_cnt==-1){
+            if(mat->parent->ref_cnt == 1){
+                free(mat->parent->data);
+                free(mat->parent);
+                free(mat);
+            }else{
+                mat->parent->ref_cnt -= 1;
+                free(mat);
             }
+        }else{
+            if(mat->ref_cnt == 1){
+                free(mat->data);
+                free(mat);
+            }else{
+                mat->ref_cnt -= 1;
+            }
+
         }
-        free(mat);
+
+    //     if(mat->ref_cnt == 1){
+    //         if(mat->parent == NULL){
+    //             free(mat->data);
+    //         } else { 
+    //             if(mat->parent->ref_cnt == 1){
+    //                 free(mat->parent->data);
+    //                 free(mat->parent);
+    //             } else{
+    //                 mat->parent->ref_cnt -= 1;
+    //             }
+    //         }
+    //         free(mat);
+    //     }
     }
 }
 
@@ -133,7 +155,14 @@ void set(matrix *mat, int row, int col, double val) {
  */
 void fill_matrix(matrix *mat, double val) {
     /* TODO: YOUR CODE HERE */
-    for(int i = 0; i< (mat->rows * mat->cols); i++) {
+    __m256d value = _mm256_set1_pd(val);
+    int len = mat->rows * mat->cols;
+    #pragma omp parallel for
+    for(int i = 0; i<len/4*4; i+=4) {
+        _mm256_storeu_pd(mat->data + i, value);
+    }
+    #pragma omp parallel for
+    for(int i = len/4*4;i<len;i++){
         mat->data[i] = val;
     }
 }
@@ -154,12 +183,13 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     int len = mat1->rows * mat1->cols;
     omp_set_num_threads(8);
     #pragma omp parallel for 
-        for(int i =0;i < len / 4 * 4; i++){
-            __m256d _1 = _mm256_loadu_pd(mat1->data + (i * 4));
-            __m256d _2 = _mm256_loadu_pd(mat2->data + (i * 4));
+        for(int i =0;i < len / 4 * 4; i+=4){
+            __m256d _1 = _mm256_loadu_pd(mat1->data + i);
+            __m256d _2 = _mm256_loadu_pd(mat2->data + i);
             __m256d _sum = _mm256_add_pd(_1,_2);
-            _mm256_storeu_pd(result->data + (i * 4), _sum);
+            _mm256_storeu_pd(result->data + i, _sum);
         }
+    #pragma omp parallel for
     for(int i = len/4*4;i<len;i++){
         result->data[i] = mat1->data[i] + mat2->data[i];
     }
@@ -239,12 +269,14 @@ int abs_matrix(matrix *result, matrix *mat) {
     // return 0;
     int len = mat->rows * mat->cols;
     __m256d _neg = _mm256_set1_pd(-1);
-    for(int i = 0;i < len / 4 * 4; i++){
-        __m256d _vals = _mm256_loadu_pd(mat->data + (i*4));
+    #pragma omp parallel for
+    for(int i = 0;i < len / 4 * 4; i+=4){
+        __m256d _vals = _mm256_loadu_pd(mat->data + i);
         __m256d _negated = _mm256_mul_pd(_vals, _neg);
-        _mm256_storeu_pd(result->data + (i*4), _mm256_max_pd(_negated, _vals));
+        _mm256_storeu_pd(result->data + i, _mm256_max_pd(_negated, _vals));
     }
 
+    #pragma omp parallel for
     for(int i = len / 4 * 4;i < len; i++){
             double val = mat->data[i];
             result->data[i] = (val >= 0 ? val : -1*val);
