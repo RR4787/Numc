@@ -198,7 +198,17 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     
 }
 
-
+matrix* transpose(matrix *mat){
+    matrix *ret = NULL;
+    allocate_matrix(&ret, mat->rows, mat->cols);
+    int len = mat->rows * mat->cols;
+    int cols = mat->cols;
+    #pragma omp parallel for
+    for(int i = 0;i<len; i++){
+        ret->data[(cols * (i%cols)) + (i/cols)] = mat->data[i]; //i%cols = col; i/cols = row
+    }
+    return ret;
+}
 
 /*
  * Store the result of multiplying mat1 and mat2 to `result`.
@@ -208,17 +218,21 @@ int add_matrix(matrix *result, matrix *mat1, matrix *mat2) {
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
     if(mat1->cols!=mat2->rows || result->cols != mat2->cols || result->rows != mat1->rows) return -1;
+    matrix *mat2_trans = transpose(mat2);
     for(int i = 0; i<mat1->rows; i++){
-        for(int j = 0; j<mat1->cols; j++){
+        for(int j = 0; j<mat2_trans->rows; j++){
             double sum = 0;
             for(int z = 0; z<mat1->cols; z++){
-                sum += mat1->data[(mat1->cols) * i + z] * mat2->data[(mat2->cols) * z + j];
+                sum += mat1->data[(mat1->cols) * i + z] * mat2_trans->data[(mat2->cols) * j + z];
             }
             result->data[(result->cols) * i + j] = sum;
         }
     }
+    deallocate_matrix(mat2_trans);
     return 0;
 }
+
+
 
 /*
  * Store the result of raising mat to the (pow)th power to `result`.
