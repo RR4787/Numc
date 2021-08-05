@@ -351,13 +351,15 @@ static PyObject *Matrix61c_multiply(Matrix61c* self, PyObject *args) {
         return NULL;
     }
     Matrix61c* result = (Matrix61c*) Matrix61c_new(&Matrix61cType, NULL, NULL);
-    int code = allocate_matrix(&(result->mat), self->mat->rows,self->mat->cols);
+    Matrix61c* mat2 = (Matrix61c *)args;
+    int code = allocate_matrix(&(result->mat), self->mat->rows,mat2->mat->cols);
     if (code != 0) {
         PyErr_SetString(PyExc_RuntimeError, "Failed to allocate matrix");
         return NULL;
     }
-    result->shape = PyTuple_Pack(2, PyLong_FromLong(self->mat->rows), PyLong_FromLong(self->mat->cols));
-    code = mul_matrix(result->mat, self->mat, ((Matrix61c *)args)->mat);
+    result->shape = PyTuple_Pack(2, PyLong_FromLong(self->mat->rows), PyLong_FromLong(mat2->mat->cols));
+    code = mul_matrix(result->mat, self->mat, mat2->mat);
+    printf("%d", code);
     if(code!=0){
         PyErr_SetString(PyExc_ValueError, "Invalid dimensions");
         return NULL;
