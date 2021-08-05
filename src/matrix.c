@@ -219,44 +219,87 @@ matrix* transpose(matrix *mat){
 int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     /* TODO: YOUR CODE HERE */
     if(mat1->cols!=mat2->rows || result->cols != mat2->cols || result->rows != mat1->rows) return -1;
-    matrix *mat2_trans = transpose(mat2);
+    //matrix *mat2_trans = transpose(mat2);
 
     omp_set_num_threads(8);
-    // matrix *mat2_trans = NULL;
-    // allocate_matrix(&mat2_trans, mat2->cols, mat2->rows);
-    // int len = mat2->rows * mat2->cols;
-    // int cols = mat2->cols;
-    // int rows = mat2->rows;
-    // #pragma omp parallel for
-    // for(int i = 0;i<len; i++){
-    //     mat2_trans->data[i] = mat2->data[(cols * (i%rows)) + (i/rows)]; //i%cols = col; i/cols = row
-    // }
+    matrix *mat2_trans = NULL;
+    allocate_matrix(&mat2_trans, mat2->cols, mat2->rows);
+    int len = mat2->rows * mat2->cols;
+    int cols = mat2->cols;
+    int rows = mat2->rows;
+    #pragma omp parallel for
+    for(int i = 0;i<len; i++){
+        mat2_trans->data[i] = mat2->data[(cols * (i%rows)) + (i/rows)]; //i%cols = col; i/cols = row
+    }
 
     int rows1 = mat1->rows;
     int cols1 = mat1->cols;
     int rows2 = mat2_trans->rows;
     int cols2 = mat2_trans->cols;
+
+    // #pragma omp parallel for
+    // for(int i = 0; i<rows1; i++){
+    //     //#pragma omp parallel for
+    //     for(int z = 0; z < cols2/4*4; z+=4){
+    //         __m256d _mat1vals = _mm256_loadu_pd(mat1->data + (cols1*i) + z);
+    //         for(int j =0; j<rows2; j++){
+    //             __m256d _mat2vals = _mm256_loadu_pd(mat2_trans->data + (cols2*j) + z);
+    //             double t[4];
+    //             _mm256_storeu_pd(t, _mm256_mul_pd(_mat1vals,_mat2vals));
+    //             result->data[rows2 * i + j] += t[0]+t[1]+t[2]+t[3];
+    //         }
+    //     }
+    //     #pragma omp parallel for
+    //     for(int z = cols2/4*4; z<cols2; z+=1){
+    //         for(int j =0; j<rows2; j++){
+    //             result->data[rows2 * i + j] += mat1->data[cols1 * i + z] * mat2_trans->data[cols2 * j + z];
+    //         }
+    //     }
+    // }
+
     #pragma omp parallel for
     for(int i = 0; i<rows1; i++){
         #pragma omp parallel for
         for(int j = 0; j<rows2; j++){
             __m256d sum = _mm256_set1_pd(0);
-            for(int z = 0; z<cols2/4*4; z+=4){
+            for(int z = 0; z<cols2/12*12; z+=12){
                 __m256d _mat1vals = _mm256_loadu_pd(mat1->data + (cols1*i) + z);
                 __m256d _mat2vals = _mm256_loadu_pd(mat2_trans->data + (cols2*j) + z);
                 sum = _mm256_add_pd(sum, _mm256_mul_pd(_mat1vals,_mat2vals));
+
+                _mat1vals = _mm256_loadu_pd(mat1->data + (cols1*i) + z + 4);
+                _mat2vals = _mm256_loadu_pd(mat2_trans->data + (cols2*j) + z + 4);
+                sum = _mm256_add_pd(sum, _mm256_mul_pd(_mat1vals,_mat2vals));
+
+                _mat1vals = _mm256_loadu_pd(mat1->data + (cols1*i) + z + 8);
+                _mat2vals = _mm256_loadu_pd(mat2_trans->data + (cols2*j) + z + 8);
+                sum = _mm256_add_pd(sum, _mm256_mul_pd(_mat1vals,_mat2vals));
+
             }
             double t[4];
             _mm256_storeu_pd(t, sum);
-            double tsum = t[0]+t[1]+t[2]+t[3];
-            //#pragma omp parallel for reduction(+:tsum)
-                for(int z = cols2/4*4; z<cols2; z+=1){
-                    tsum += mat1->data[cols1 * i + z] * mat2_trans->data[cols2 * j + z];
+            for(int z = cols2/12*12; z<cols2; z+=1){
+                    t[0] += mat1->data[cols1 * i + z] * mat2_trans->data[cols2 * j + z];
                 }
-            // double tsum = 0;
-            // for(int z = 0; z<mat2_trans->cols; z++){
-            //     tsum += mat1->data[(mat1->cols) * i + z] * mat2_trans->data[(mat2_trans->cols) * j + z];
+            double tsum = t[0]+t[1]+t[2]+t[3];
+            // __m256d sum = _mm256_set1_pd(0);
+            // for(int z = 0; z<cols2/4*4; z+=4){
+            //     __m256d _mat1vals = _mm256_loadu_pd(mat1->data + (cols1*i) + z);
+            //     __m256d _mat2vals = _mm256_loadu_pd(mat2_trans->data + (cols2*j) + z);
+            //     sum = _mm256_add_pd(sum, _mm256_mul_pd(_mat1vals,_mat2vals));
             // }
+            // double t[4];
+            // _mm256_storeu_pd(t, sum);
+            // double tsum = t[0]+t[1]+t[2]+t[3];
+            // //#pragma omp parallel for reduction(+:tsum)
+            //     for(int z = cols2/4*4; z<cols2; z+=1){
+            //         tsum += mat1->data[cols1 * i + z] * mat2_trans->data[cols2 * j + z];
+            //     }
+            // // double tsum = 0;
+            // // #pragma omp parallel for reduction(+:tsum)
+            // // for(int z = 0; z<mat2_trans->cols; z++){
+            // //     tsum += mat1->data[(mat1->cols) * i + z] * mat2_trans->data[(mat2_trans->cols) * z + j];
+            // // }
             result->data[(result->cols) * i + j] = tsum;
         }
     }
@@ -334,7 +377,9 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
                 result->data[i] = temp->data[i];
             }
         }
-        deallocate_matrix(temp);
+        //deallocate_matrix(temp);
+        free(temp->data);
+        free(temp);
     }
     return 0;
 }
