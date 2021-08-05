@@ -221,7 +221,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     if(mat1->cols!=mat2->rows || result->cols != mat2->cols || result->rows != mat1->rows) return -1;
     matrix *mat2_trans = transpose(mat2);
 
-    // omp_set_num_threads(8);
+    omp_set_num_threads(8);
     // matrix *mat2_trans = NULL;
     // allocate_matrix(&mat2_trans, mat2->cols, mat2->rows);
     // int len = mat2->rows * mat2->cols;
