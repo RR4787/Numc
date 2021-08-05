@@ -95,15 +95,15 @@ class TestAbs(TestCase):
 class TestMul(TestCase):
     def test_small_mul(self):
         # TODO: YOUR CODE HERE
-        dp_mat1, nc_mat1 = rand_dp_nc_matrix(5, 2, seed=0)
-        dp_mat2, nc_mat2 = rand_dp_nc_matrix(2, 6, seed=1)
+        dp_mat1, nc_mat1 = rand_dp_nc_matrix(2, 3, seed=1)
+        dp_mat2, nc_mat2 = rand_dp_nc_matrix(3, 2, seed=2)
         is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
 
     def test_medium_mul(self):
-        dp_mat1, nc_mat1 = rand_dp_nc_matrix(600, 1000, seed=0)
-        dp_mat2, nc_mat2 = rand_dp_nc_matrix(1000, 900, seed=1)
+        dp_mat1, nc_mat1 = rand_dp_nc_matrix(900, 5, seed=0)
+        dp_mat2, nc_mat2 = rand_dp_nc_matrix(5, 200, seed=1)
         is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
@@ -111,6 +111,20 @@ class TestMul(TestCase):
     def test_large_mul(self):
         dp_mat1, nc_mat1 = rand_dp_nc_matrix(1000, 1000, seed=0)
         dp_mat2, nc_mat2 = rand_dp_nc_matrix(1000, 1000, seed=1)
+        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
+        self.assertTrue(is_correct)
+        print_speedup(speed_up)
+
+    def test_large_mul2(self):
+        dp_mat1, nc_mat1 = rand_dp_nc_matrix(18,1, seed=5)
+        dp_mat2, nc_mat2 = rand_dp_nc_matrix(1, 542, seed=241)
+        is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
+        self.assertTrue(is_correct)
+        print_speedup(speed_up)
+
+    def test_large_mul3(self):
+        dp_mat1, nc_mat1 = rand_dp_nc_matrix(4,2, seed=5)
+        dp_mat2, nc_mat2 = rand_dp_nc_matrix(2, 8, seed=241)
         is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "mul")
         self.assertTrue(is_correct)
         print_speedup(speed_up)
