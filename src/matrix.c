@@ -228,7 +228,7 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
     int rows = mat2->rows;
     #pragma omp parallel for
     for(int i = 0;i<len; i++){
-        mat2_trans->data[i] = mat2->data[(cols * (i%rows)) + (i/rows)]; //i%cols = col; i/cols = row
+        *(mat2_trans->data + i) = *(mat2->data + ((cols * (i%rows)) + (i/rows))); //i%cols = col; i/cols = row
     }
 
     int rows1 = mat1->rows; //result rows
@@ -263,10 +263,10 @@ int mul_matrix(matrix *result, matrix *mat1, matrix *mat2) {
             double t[4];
             _mm256_storeu_pd(t, sum);
             for(int z = cols2/4*4; z<cols2; z+=1){
-                    t[0] += mat1->data[cols1 * i + z] * mat2_trans->data[cols2 * j + z];
+                    t[0] += (*(mat1->data + (cols1 * i + z))) * (*(mat2_trans->data + (cols2 * j + z)));
             }
             double tsum = t[0]+t[1]+t[2]+t[3];
-            result->data[(result->cols) * i + j] = tsum;
+            *(result->data + ((result->cols) * i + j)) = tsum;
         }
     }
     free(mat2_trans->data);
