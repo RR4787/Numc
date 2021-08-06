@@ -356,11 +356,12 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         int s = 1;
         //mul_matrix(temp, result, mat);
         #pragma omp parallel for
-        for(int i = 0; i<(rows*cols)/4*4;i+=4){
+        for(int i = 0; i<(rows*cols)/8*8;i+=8){
             _mm256_storeu_pd(A->data + i, _mm256_loadu_pd(mat->data + i));
+            _mm256_storeu_pd(A->data + i + 4, _mm256_loadu_pd(mat->data + i + 4));
         }
         #pragma omp parallel for
-        for(int i = (rows*cols)/4*4; i<rows*cols; i++){
+        for(int i = (rows*cols)/8*8; i<rows*cols; i++){
             A->data[i] = mat->data[i];
         }
         // while(k<pow){
@@ -405,11 +406,12 @@ int pow_matrix(matrix *result, matrix *mat, int pow) {
         // }
         if(!s){
             #pragma omp parallel for
-            for(int i = 0; i<(rows*cols)/4*4;i+=4){
+            for(int i = 0; i<(rows*cols)/8*8;i+=8){
                 _mm256_storeu_pd(result->data + i, _mm256_loadu_pd(temp->data + i));
+                _mm256_storeu_pd(result->data + i + 4, _mm256_loadu_pd(temp->data + i + 4));
             }
             #pragma omp parallel for
-            for(int i = (rows*cols)/4*4; i<rows*cols; i++){
+            for(int i = (rows*cols)/8*8; i<rows*cols; i++){
                 result->data[i] = temp->data[i];
             }
         }
