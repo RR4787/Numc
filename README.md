@@ -30,18 +30,18 @@
 
 ### Provide answers to the following questions for each set of partners.
 - How many hours did you spend on the following tasks?
-  - Task 1 (Matrix functions in C): ???
-  - Task 2 (Writing the Python-C interface): ???
-  - Task 3 (Speeding up matrix operations): ???
+  - Task 1 (Matrix functions in C): 0 hours
+  - Task 2 (Writing the Python-C interface): 2-3 hours
+  - Task 3 (Speeding up matrix operations): 5-6 hours
 - Was this project interesting? What was the most interesting aspect about it?
-  - <b>???</b>
+  - <b>This project was very interesting. I think the most interesting aspect was the ability to choose unique efficient algorithms and then further optimize them using techniques such as pragmas and simds. The fact that we can basically parallelize our way to save tons of time (which is a limited resource) is fascinating to me. Furthermore, the fact that there are ways to utilize our already existing hardware to do so (such as in intel instrisics) is really cool and interesting. We have the power to do so right at our own personal computers.  </b>
 - What did you learn?
-  - <b>???</b>
+  - <b>I learned all the different ways to optimize and parallelize algorithms to work more efficiently. Furthermore, reading apis can be very annoying at times but learning how to better go to these specific resources and utilizing them (python ojects for example) helped me understand better how to use the internet as a very powerful resource in researching.</b>
 - Is there anything you would change?
-  - <b>???</b>
+  - <b>I believe more hints or tips towards how to properly use some of the libraries would have helped (such as unpacking tuples). </b>
 
 ### If you worked with a partner:
 - In one short paragraph, describe your contribution(s) to the project.
-  - <b>???</b>
+  - <b>I helped with writing python-c interface, writing and debugging tests and finding some sources of errors, and helping with enhancing performance. </b>
 - In one short paragraph, describe your partner's contribution(s) to the project.
-  - <b>???</b>
+  - <b>He wrote the initial naive implementation, also helped with python-c interface, and was phenomenal at finding efficient ways to enhance our performance. He was a great partner. </b>
