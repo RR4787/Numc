@@ -330,7 +330,7 @@ void pow_mul(matrix *result, matrix *mat1,matrix *mat2, matrix* mat2_trans){
  * Remember that pow is defined with matrix multiplication, not element-wise multiplication.
  */
 int pow_matrix(matrix *result, matrix *mat, int pow) {
-    if(mat->rows != mat->cols || result->rows != result->cols || result->rows != mat->rows) return -1;
+    if(pow < 0 ||mat->rows != mat->cols || result->rows != result->cols || result->rows != mat->rows) return -1;
     omp_set_num_threads(8);
     fill_matrix(result, 0);
     int cols = result->cols;

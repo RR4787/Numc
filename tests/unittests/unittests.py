@@ -234,3 +234,53 @@ class TestSlice(TestCase):
         dp_mat, nc_mat = rand_dp_nc_matrix(2, 2, seed=0)
         self.assertTrue(cmp_dp_nc_matrix(dp_mat[0], nc_mat[0]))
         self.assertTrue(cmp_dp_nc_matrix(dp_mat[1], nc_mat[1]))
+
+class TestHidden(TestCase):
+    def test_slice(self):
+        # TODO: YOUR CODE HERE
+        dp_mat, nc_mat = rand_dp_nc_matrix(2, 2, seed=0)
+        self.assertTrue(cmp_dp_nc_matrix(dp_mat[0], nc_mat[0]))
+        self.assertTrue(cmp_dp_nc_matrix(dp_mat[1], nc_mat[1]))
+
+    def test_wrong_args_all(self):
+        dp_mat1, nc_mat1 = rand_dp_nc_matrix(100, 100, seed=0)
+        dp_mat2, nc_mat2 = rand_dp_nc_matrix(99, 20, seed=1)
+        
+        nc_mat1 ** 32
+        #is_correct, speed_up = compute([dp_mat1, dp_mat2], [nc_mat1, nc_mat2], "add")
+
+    def test_slice_after(self):
+        dp_mat, nc_mat = rand_dp_nc_matrix(5, 5, seed=0)
+        self.assertTrue(cmp_dp_nc_matrix(dp_mat[0], nc_mat[0]))
+        self.assertTrue(cmp_dp_nc_matrix(dp_mat[1], nc_mat[1]))
+        self.assertTrue(cmp_dp_nc_matrix(dp_mat[0] + dp_mat[1], nc_mat[0] +nc_mat[1]))   
+
+    def test_slice_after(self):
+        dp_mat, nc_mat = rand_dp_nc_matrix(5, 5, seed=0)
+        self.assertTrue(cmp_dp_nc_matrix(dp_mat[0], nc_mat[0]))
+        self.assertTrue(cmp_dp_nc_matrix(dp_mat[1], nc_mat[1]))
+        self.assertTrue(cmp_dp_nc_matrix(dp_mat[0] + dp_mat[1], nc_mat[0] +nc_mat[1])) 
+
+    def test_index_get_error(self):
+        # TODO: YOUR CODE HERE
+        dp_mat, nc_mat = rand_dp_nc_matrix(2, 2, seed=0)
+        rand_row = np.random.randint(dp_mat.shape[0])
+        rand_col = np.random.randint(dp_mat.shape[1])
+        dp_mat[-1]
+
+    def test_set_error(self):
+        # TODO: YOUR CODE HERE
+        dp_mat, nc_mat = rand_dp_nc_matrix(20, 9, seed=0)
+        rand_row = np.random.randint(dp_mat.shape[0])
+        rand_col = np.random.randint(dp_mat.shape[1])
+        dp_mat[6][2] = 2
+        nc_mat[6][2] = 2
+        self.assertTrue(cmp_dp_nc_matrix(dp_mat, nc_mat))
+        self.assertEquals(nc_mat[6][2], 2)
+        
+
+        
+
+    
+
+       
